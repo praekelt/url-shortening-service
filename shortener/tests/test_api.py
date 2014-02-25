@@ -39,3 +39,8 @@ class TestShortenerServiceApp(TestCase):
 
         result = yield treq.json_content(resp)
         self.assertEqual(result['short_url'], 'foo')
+
+    def test_url_shortening(self):
+        long_url = 'http://en.wikipedia.org/wiki/Cthulhu'
+        short_url = self.service.shorten_url(long_url)
+        self.assertEqual(short_url, 'http://wtxt.io/000')

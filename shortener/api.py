@@ -22,3 +22,7 @@ class ShortenerServiceApp(object):
 
         yield request.setResponseCode(http.OK)
         returnValue({'short_url': 'foo'})
+
+    def shorten_url(self, long_url):
+        short_url = ''
+        return short_url
