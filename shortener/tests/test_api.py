@@ -80,6 +80,18 @@ class TestShortenerServiceApp(TestCase):
         self.assertEqual(location, url)
 
     @inlineCallbacks
+    def test_resolve_url_404(self):
+        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        yield self.service.shorten_url(self.test_account, url)
+
+        resp = yield treq.get(
+            self.make_url('/1Tx'),
+            allow_redirects=False,
+            pool=self.pool)
+
+        self.assertEqual(resp.code, 404)
+
+    @inlineCallbacks
     def test_url_shortening(self):
         long_url = 'http://en.wikipedia.org/wiki/Cthulhu'
         short_url = yield self.service.shorten_url(self.test_account, long_url)
