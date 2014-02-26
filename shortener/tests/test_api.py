@@ -80,3 +80,14 @@ class TestShortenerServiceApp(TestCase):
         url4 = yield self.service.shorten_url(self.test_account, url + '4')
         urls = [url1, url2, url3, url4]
         self.assertEqual(len(list(set(urls))), 4)
+
+    @inlineCallbacks
+    def test_repeat_url_generation(self):
+        yield self.service.create_tables(self.test_account)
+        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        url1 = yield self.service.shorten_url(self.test_account, url + '1')
+        url2 = yield self.service.shorten_url(self.test_account, url + '2')
+        url3 = yield self.service.shorten_url(self.test_account, url + '2')
+        url4 = yield self.service.shorten_url(self.test_account, url + '1')
+        urls = [url1, url2, url3, url4]
+        self.assertEqual(len(list(set(urls))), 2)
