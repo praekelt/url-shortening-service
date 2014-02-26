@@ -14,3 +14,9 @@ Install
     $ source ve/bin/activate
     (ve)$ pip install -e .
     (ve)$ trial shortener
+
+.. |travis| image:: https://travis-ci.org/praekelt/url-shortening-service.png?branch=develop
+.. _travis: https://travis-ci.org/praekelt/url-shortening-service
+
+.. |coveralls| image:: https://coveralls.io/repos/praekelt/url-shortening-service/badge.png?branch=develop
+.. _coveralls: https://coveralls.io/r/praekelt/url-shortening-service
