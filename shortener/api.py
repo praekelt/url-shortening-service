@@ -25,14 +25,27 @@ class ShortenerServiceApp(object):
     @inlineCallbacks
     def create_url(self, request):
         props = get_json_params(
-            request, ['account', 'api_key', 'long_url', 'user_token'])
+            request, ['account', 'long_url', 'user_token'])
         account = props['account']
-        api_key = props['api_key']
         long_url = props['long_url']
-        user_token = props['user_token']
+        user_token = props.get('user_token', None)
 
+        short_url = yield self.shorten_url(account, long_url, user_token)
         yield request.setResponseCode(http.OK)
-        returnValue({'short_url': 'foo'})
+        returnValue({'short_url': short_url})
+
+    @handler('/<string:short_url>', methods=['GET'])
+    @inlineCallbacks
+    def resolve_url(self, request, short_url):
+        row = yield self.get_row_by_short_url(
+            self.config['account'],
+            short_url
+        )
+        if row and row['long_url']:
+            request.redirect(row['long_url'].encode('utf-8'))
+        else:
+            request.setResponseCode(http.NOT_FOUND)
+        returnValue({})
 
     @inlineCallbacks
     def create_tables(self, account):
@@ -49,21 +62,15 @@ class ShortenerServiceApp(object):
 
     @inlineCallbacks
     def shorten_url(self, account, long_url, user_token=DEFAULT_USER_TOKEN):
+        if not user_token:
+            user_token = DEFAULT_USER_TOKEN
+
         row = yield self.get_or_create_row(account, long_url, user_token)
         short_url = row['short_url']
         if not row['short_url']:
             short_url = self.generate_token(row['id'])
             yield self.update_short_url(account, row['id'], short_url)
         returnValue(urljoin(self.config['host_domain'], short_url))
-
-    @inlineCallbacks
-    def resolve_url(self, account, short_url):
-        uri = urlparse(short_url)
-        row = yield self.get_short_url(account, uri.path[1:])
-        if row is None:
-            returnValue(None)
-        else:
-            returnValue(row['long_url'])
 
     @inlineCallbacks
     def get_or_create_row(self, account, url, user_token):
@@ -78,11 +85,8 @@ class ShortenerServiceApp(object):
                 url
             )
             returnValue(row)
-        except NoShortenerTables as e:
-            raise APIError(
-                'Account "%s" does not exist: %s' % (account, e.reason),
-                200
-            )
+        except NoShortenerTables:
+            raise APIError('Account "%s" does not exist' % account, 200)
         finally:
             yield conn.close()
 
@@ -110,7 +114,7 @@ class ShortenerServiceApp(object):
         return ''.join(digits)
 
     @inlineCallbacks
-    def get_short_url(self, account, short_url):
+    def get_row_by_short_url(self, account, short_url):
         conn = yield self.engine.connect()
         try:
             tables = ShortenerTables(account, conn)
