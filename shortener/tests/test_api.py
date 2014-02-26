@@ -173,9 +173,9 @@ class TestShortenerServiceApp(TestCase):
             yield self.service.shorten_url(self.test_account, u)
 
         result = yield self.service.get_row_by_short_url(
-            self.test_account, '1P')
+            self.test_account, '1p')
         self.assertEqual(result['long_url'], url + '87')
 
         result = yield self.service.get_row_by_short_url(
             self.test_account, '1b')
-        self.assertEqual(result['long_url'], url + '99')
+        self.assertEqual(result['long_url'], url + '73')

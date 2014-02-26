@@ -1,16 +1,16 @@
 # -*- test-case-name: shortener.tests.test_api -*-
+import string
+from urlparse import urljoin, urlparse
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web import http
 
 from aludel.database import get_engine
 from aludel.service import service, handler, get_json_params, APIError
-from urlparse import urljoin, urlparse
 
-from .models import ShortenerTables, NoShortenerTables
+from shortener.models import ShortenerTables, NoShortenerTables
 
-DEFAULT_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +\
-                   'abcdefghijklmnopqrstuvwxyz'
+DEFAULT_ALPHABET = string.digits + string.ascii_letters
 DEFAULT_USER_TOKEN = 'generic-user-token'
 
 
