@@ -21,7 +21,7 @@ class ShortenerServiceApp(object):
         self.config = config
         self.engine = get_engine(config['connection_string'], reactor)
 
-    @handler('/', methods=['PUT'])
+    @handler('/create', methods=['PUT'])
     @inlineCallbacks
     def create_url(self, request):
         props = get_json_params(
