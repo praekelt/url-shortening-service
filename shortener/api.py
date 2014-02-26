@@ -49,6 +49,24 @@ class ShortenerServiceApp(object):
         returnValue({'created': not already_exists})
 
     @inlineCallbacks
+    def shorten_url(self, account, long_url, user_token=DEFAULT_USER_TOKEN):
+        row = yield self.get_or_create_row(account, long_url, user_token)
+        short_url = row['short_url']
+        if not row['short_url']:
+            short_url = self.generate_token(row['id'])
+            yield self.update_short_url(account, row['id'], short_url)
+        returnValue(urljoin(self.config['host_domain'], short_url))
+
+    @inlineCallbacks
+    def resolve_url(self, account, short_url):
+        uri = urlparse(short_url)
+        row = yield self.get_short_url(account, uri.path[1:])
+        if row is None:
+            returnValue(None)
+        else:
+            returnValue(row['long_url'])
+
+    @inlineCallbacks
     def get_or_create_row(self, account, url, user_token):
         domain = urlparse(url).netloc
         conn = yield self.engine.connect()
@@ -77,16 +95,6 @@ class ShortenerServiceApp(object):
         yield tables.update_short_url(row_id, short_url)
         yield conn.close()
 
-    @inlineCallbacks
-    def shorten_url(self, account, long_url, user_token=DEFAULT_USER_TOKEN):
-        row = yield self.get_or_create_row(account, long_url, user_token)
-        short_url = row['short_url']
-        if not row['short_url']:
-            token = self.generate_token(row['id'])
-            short_url = urljoin(self.config['host_domain'], token)
-            yield self.update_short_url(account, row['id'], short_url)
-        returnValue(short_url)
-
     def generate_token(self, counter, alphabet=DEFAULT_ALPHABET):
         if not isinstance(counter, int):
             raise TypeError('an integer is required')
@@ -101,3 +109,19 @@ class ShortenerServiceApp(object):
 
         digits.reverse()
         return ''.join(digits)
+
+    @inlineCallbacks
+    def get_short_url(self, account, short_url):
+        conn = yield self.engine.connect()
+        try:
+            tables = ShortenerTables(account, conn)
+
+            row = yield tables.get_row_by_short_url(short_url)
+            returnValue(row)
+        except NoShortenerTables as e:
+            raise APIError(
+                'Account "%s" does not exist: %s' % (account, e.reason),
+                200
+            )
+        finally:
+            yield conn.close()

@@ -91,3 +91,16 @@ class TestShortenerServiceApp(TestCase):
         url4 = yield self.service.shorten_url(self.test_account, url + '1')
         urls = [url1, url2, url3, url4]
         self.assertEqual(len(list(set(urls))), 2)
+
+    @inlineCallbacks
+    def test_resolve_url(self):
+        yield self.service.create_tables(self.test_account)
+        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        yield self.service.shorten_url(self.test_account, url + '1')
+        yield self.service.shorten_url(self.test_account, url + '2')
+        yield self.service.shorten_url(self.test_account, url + '3')
+        yield self.service.shorten_url(self.test_account, url + '4')
+
+        short_url = yield self.service.resolve_url(
+            self.test_account, 'http://wtxt.io/4')
+        self.assertEqual(short_url, 'http://en.wikikipedia.org/wiki/Cthulhu4')

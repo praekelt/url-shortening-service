@@ -22,12 +22,15 @@ class ShortenerTables(TableCollection):
         Column("domain", String(255), nullable=False, index=True),
         Column("user_token", String(255), nullable=False, index=True),
         Column("hash", String(32), index=True),
-        Column("short_url", String(255)),
+        Column("short_url", String(255), index=True),
         Column("long_url", String(255)),
         Column("created_at", DateTime(timezone=False))
     )
 
     def _format_row(self, row, fields=None):
+        if row is None:
+            return None
+
         if fields is None:
             fields = set(f for f in row.keys())
         return dict((k, v) for k, v in row.items() if k in fields)
@@ -79,3 +82,12 @@ class ShortenerTables(TableCollection):
             self.shortened_urls.update().where(
                 self.shortened_urls.c.id == row_id
             ).values(short_url=short_url))
+
+    @inlineCallbacks
+    def get_row_by_short_url(self, short_url):
+        result = yield self.execute_query(
+            self.shortened_urls.select().where(
+                self.shortened_urls.c.short_url == short_url
+            ).limit(1))
+        row = yield result.fetchone()
+        returnValue(self._format_row(row))
