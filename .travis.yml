@@ -6,7 +6,7 @@ services:
   - redis-server
 install:
   - "pip install coveralls --use-wheel"
-  - "pip install -e ."
+  - "pip install -e . --use-wheel"
 script:
   - coverage run --source=shortener `which trial` shortener
 after_success:
