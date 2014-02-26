@@ -66,6 +66,21 @@ class TestShortenerServiceApp(TestCase):
         self.assertEqual(result['short_url'], 'http://wtxt.io/1')
 
     @inlineCallbacks
+    def test_create_url_no_user_token(self):
+        payload = {
+            'account': self.test_account,
+            'long_url': 'foo'
+        }
+        resp = yield treq.put(
+            self.make_url('/'),
+            data=json.dumps(payload),
+            allow_redirects=False,
+            pool=self.pool)
+
+        result = yield treq.json_content(resp)
+        self.assertEqual(result['short_url'], 'http://wtxt.io/1')
+
+    @inlineCallbacks
     def test_resolve_url_simple(self):
         url = 'http://en.wikikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(self.test_account, url)

@@ -25,7 +25,7 @@ class ShortenerServiceApp(object):
     @inlineCallbacks
     def create_url(self, request):
         props = get_json_params(
-            request, ['account', 'long_url', 'user_token'])
+            request, ['account', 'long_url'], ['user_token'])
         account = props['account']
         long_url = props['long_url']
         user_token = props.get('user_token', None)
