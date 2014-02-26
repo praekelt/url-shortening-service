@@ -104,3 +104,19 @@ class TestShortenerServiceApp(TestCase):
         short_url = yield self.service.resolve_url(
             self.test_account, 'http://wtxt.io/4')
         self.assertEqual(short_url, 'http://en.wikikipedia.org/wiki/Cthulhu4')
+
+    @inlineCallbacks
+    def test_short_url_sequencing(self):
+        yield self.service.create_tables(self.test_account)
+        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        urls = [''.join([url, str(a)]) for a in range(1, 200)]
+        for u in urls:
+            yield self.service.shorten_url(self.test_account, u)
+
+        short_url = yield self.service.resolve_url(
+            self.test_account, 'http://wtxt.io/2H')
+        self.assertEqual(short_url, url + '141')
+
+        short_url = yield self.service.resolve_url(
+            self.test_account, 'http://wtxt.io/1y')
+        self.assertEqual(short_url, url + '122')

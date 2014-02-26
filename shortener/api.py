@@ -9,7 +9,6 @@ from urlparse import urljoin, urlparse
 
 from .models import ShortenerTables, NoShortenerTables
 
-# To be moved to config.yaml
 DEFAULT_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +\
                    'abcdefghijklmnopqrstuvwxyz'
 DEFAULT_USER_TOKEN = 'generic-user-token'
