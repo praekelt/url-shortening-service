@@ -93,10 +93,12 @@ class ShortenerServiceApp(object):
     @inlineCallbacks
     def update_short_url(self, account, row_id, short_url):
         conn = yield self.engine.connect()
-        tables = ShortenerTables(account, conn)
+        try:
+            tables = ShortenerTables(account, conn)
 
-        yield tables.update_short_url(row_id, short_url)
-        yield conn.close()
+            yield tables.update_short_url(row_id, short_url)
+        finally:
+            yield conn.close()
 
     def generate_token(self, counter, alphabet=DEFAULT_ALPHABET):
         if not isinstance(counter, int):
@@ -121,10 +123,5 @@ class ShortenerServiceApp(object):
 
             row = yield tables.get_row_by_short_url(short_url)
             returnValue(row)
-        except NoShortenerTables as e:
-            raise APIError(
-                'Account "%s" does not exist: %s' % (account, e.reason),
-                200
-            )
         finally:
             yield conn.close()
