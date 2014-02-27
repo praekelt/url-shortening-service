@@ -25,22 +25,18 @@ class ShortenerServiceApp(object):
     @inlineCallbacks
     def create_url(self, request):
         props = get_json_params(
-            request, ['account', 'long_url'], ['user_token'])
-        account = props['account']
+            request, ['long_url'], ['user_token'])
         long_url = props['long_url']
         user_token = props.get('user_token', None)
 
-        short_url = yield self.shorten_url(account, long_url, user_token)
+        short_url = yield self.shorten_url(long_url, user_token)
         yield request.setResponseCode(http.OK)
         returnValue({'short_url': short_url})
 
     @handler('/<string:short_url>', methods=['GET'])
     @inlineCallbacks
     def resolve_url(self, request, short_url):
-        row = yield self.get_row_by_short_url(
-            self.config['account'],
-            short_url
-        )
+        row = yield self.get_row_by_short_url(short_url)
         if row and row['long_url']:
             request.redirect(row['long_url'].encode('utf-8'))
         else:
@@ -48,8 +44,9 @@ class ShortenerServiceApp(object):
         returnValue({})
 
     @inlineCallbacks
-    def create_tables(self, account):
+    def create_tables(self):
         conn = yield self.engine.connect()
+        account = self.config['account']
         tables = ShortenerTables(account, conn)
         try:
             already_exists = yield tables.exists()
@@ -61,19 +58,20 @@ class ShortenerServiceApp(object):
         returnValue({'created': not already_exists})
 
     @inlineCallbacks
-    def shorten_url(self, account, long_url, user_token=DEFAULT_USER_TOKEN):
+    def shorten_url(self, long_url, user_token=DEFAULT_USER_TOKEN):
         if not user_token:
             user_token = DEFAULT_USER_TOKEN
 
-        row = yield self.get_or_create_row(account, long_url, user_token)
+        row = yield self.get_or_create_row(long_url, user_token)
         short_url = row['short_url']
         if not row['short_url']:
             short_url = self.generate_token(row['id'])
-            yield self.update_short_url(account, row['id'], short_url)
+            yield self.update_short_url(row['id'], short_url)
         returnValue(urljoin(self.config['host_domain'], short_url))
 
     @inlineCallbacks
-    def get_or_create_row(self, account, url, user_token):
+    def get_or_create_row(self, url, user_token):
+        account = self.config['account']
         domain = urlparse(url).netloc
         conn = yield self.engine.connect()
         try:
@@ -91,7 +89,8 @@ class ShortenerServiceApp(object):
             yield conn.close()
 
     @inlineCallbacks
-    def update_short_url(self, account, row_id, short_url):
+    def update_short_url(self, row_id, short_url):
+        account = self.config['account']
         conn = yield self.engine.connect()
         try:
             tables = ShortenerTables(account, conn)
@@ -116,7 +115,8 @@ class ShortenerServiceApp(object):
         return ''.join(digits)
 
     @inlineCallbacks
-    def get_row_by_short_url(self, account, short_url):
+    def get_row_by_short_url(self, short_url):
+        account = self.config['account']
         conn = yield self.engine.connect()
         try:
             tables = ShortenerTables(account, conn)

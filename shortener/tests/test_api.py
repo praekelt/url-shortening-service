@@ -24,10 +24,9 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def setUp(self):
         reactor.suggestThreadPoolSize(1)
-        self.test_account = 'milton-test-account'
         cfg = {
             'host_domain': 'http://wtxt.io',
-            'account': self.test_account,
+            'account': 'milton-test-account',
             #'connection_string': 'postgresql://shortener:shortener@localhost:5432/shortener'
             'connection_string': 'sqlite://'
         }
@@ -42,7 +41,7 @@ class TestShortenerServiceApp(TestCase):
         self.listener_port = self.listener.getHost().port
         self.conn = yield self.service.engine.connect()
         self.addCleanup(self._drop_tables)
-        yield self.service.create_tables(self.test_account)
+        yield self.service.create_tables()
         self.addCleanup(self.listener.loseConnection)
         self.addCleanup(self.pool.closeCachedConnections)
 
@@ -52,7 +51,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_create_url_simple(self):
         payload = {
-            'account': self.test_account,
             'long_url': 'foo',
             'user_token': 'bar',
         }
@@ -68,7 +66,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_create_url_no_user_token(self):
         payload = {
-            'account': self.test_account,
             'long_url': 'foo'
         }
         resp = yield treq.put(
@@ -81,30 +78,9 @@ class TestShortenerServiceApp(TestCase):
         self.assertEqual(result['short_url'], 'http://wtxt.io/1')
 
     @inlineCallbacks
-    def test_create_url_invalid_account(self):
-        payload = {
-            'account': 'some-random-account',
-            'long_url': 'foo'
-        }
-        resp = yield treq.put(
-            self.make_url('/create'),
-            data=json.dumps(payload),
-            allow_redirects=False,
-            pool=self.pool)
-
-        result = yield treq.json_content(resp)
-        self.assertEqual(resp.code, 200)
-
-        result = yield treq.json_content(resp)
-        self.assertEqual(
-            result['error'],
-            'Account "some-random-account" does not exist'
-        )
-
-    @inlineCallbacks
     def test_resolve_url_simple(self):
         url = 'http://en.wikikipedia.org/wiki/Cthulhu'
-        yield self.service.shorten_url(self.test_account, url)
+        yield self.service.shorten_url(url)
 
         resp = yield treq.get(
             self.make_url('/1'),
@@ -118,7 +94,7 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_resolve_url_404(self):
         url = 'http://en.wikikipedia.org/wiki/Cthulhu'
-        yield self.service.shorten_url(self.test_account, url)
+        yield self.service.shorten_url(url)
 
         resp = yield treq.get(
             self.make_url('/1Tx'),
@@ -130,39 +106,38 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_url_shortening(self):
         long_url = 'http://en.wikipedia.org/wiki/Cthulhu'
-        short_url = yield self.service.shorten_url(self.test_account, long_url)
+        short_url = yield self.service.shorten_url(long_url)
         self.assertEqual(short_url, 'http://wtxt.io/1')
 
     @inlineCallbacks
     def test_short_url_generation(self):
         url = 'http://en.wikikipedia.org/wiki/Cthulhu'
-        url1 = yield self.service.shorten_url(self.test_account, url + '1')
-        url2 = yield self.service.shorten_url(self.test_account, url + '2')
-        url3 = yield self.service.shorten_url(self.test_account, url + '3')
-        url4 = yield self.service.shorten_url(self.test_account, url + '4')
+        url1 = yield self.service.shorten_url(url + '1')
+        url2 = yield self.service.shorten_url(url + '2')
+        url3 = yield self.service.shorten_url(url + '3')
+        url4 = yield self.service.shorten_url(url + '4')
         urls = [url1, url2, url3, url4]
         self.assertEqual(len(list(set(urls))), 4)
 
     @inlineCallbacks
     def test_repeat_url_generation(self):
         url = 'http://en.wikikipedia.org/wiki/Cthulhu'
-        url1 = yield self.service.shorten_url(self.test_account, url + '1')
-        url2 = yield self.service.shorten_url(self.test_account, url + '2')
-        url3 = yield self.service.shorten_url(self.test_account, url + '2')
-        url4 = yield self.service.shorten_url(self.test_account, url + '1')
+        url1 = yield self.service.shorten_url(url + '1')
+        url2 = yield self.service.shorten_url(url + '2')
+        url3 = yield self.service.shorten_url(url + '2')
+        url4 = yield self.service.shorten_url(url + '1')
         urls = [url1, url2, url3, url4]
         self.assertEqual(len(list(set(urls))), 2)
 
     @inlineCallbacks
     def test_resolve_url(self):
         url = 'http://en.wikikipedia.org/wiki/Cthulhu'
-        yield self.service.shorten_url(self.test_account, url + '1')
-        yield self.service.shorten_url(self.test_account, url + '2')
-        yield self.service.shorten_url(self.test_account, url + '3')
-        yield self.service.shorten_url(self.test_account, url + '4')
+        yield self.service.shorten_url(url + '1')
+        yield self.service.shorten_url(url + '2')
+        yield self.service.shorten_url(url + '3')
+        yield self.service.shorten_url(url + '4')
 
-        result = yield self.service.get_row_by_short_url(
-            self.test_account, '4')
+        result = yield self.service.get_row_by_short_url('4')
         self.assertEqual(result['long_url'], url + '4')
 
     @inlineCallbacks
@@ -170,12 +145,10 @@ class TestShortenerServiceApp(TestCase):
         url = 'http://en.wikikipedia.org/wiki/Cthulhu'
         urls = [''.join([url, str(a)]) for a in range(1, 100)]
         for u in urls:
-            yield self.service.shorten_url(self.test_account, u)
+            yield self.service.shorten_url(u)
 
-        result = yield self.service.get_row_by_short_url(
-            self.test_account, '1p')
+        result = yield self.service.get_row_by_short_url('1p')
         self.assertEqual(result['long_url'], url + '87')
 
-        result = yield self.service.get_row_by_short_url(
-            self.test_account, '1b')
+        result = yield self.service.get_row_by_short_url('1b')
         self.assertEqual(result['long_url'], url + '73')
