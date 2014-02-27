@@ -30,7 +30,7 @@ class ShortenerServiceApp(object):
         user_token = props.get('user_token', None)
 
         short_url = yield self.shorten_url(long_url, user_token)
-        yield request.setResponseCode(http.OK)
+        yield request.setResponseCode(http.CREATED)
         returnValue({'short_url': short_url})
 
     @handler('/<string:short_url>', methods=['GET'])
