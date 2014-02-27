@@ -38,7 +38,8 @@ class ShortenerServiceApp(object):
     def resolve_url(self, request, short_url):
         row = yield self.get_row_by_short_url(short_url)
         if row and row['long_url']:
-            request.redirect(row['long_url'].encode('utf-8'))
+            request.setResponseCode(http.MOVED_PERMANENTLY)
+            request.setHeader(b"location", row['long_url'].encode('utf-8'))
         else:
             request.setResponseCode(http.NOT_FOUND)
         returnValue({})

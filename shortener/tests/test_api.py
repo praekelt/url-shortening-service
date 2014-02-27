@@ -87,7 +87,7 @@ class TestShortenerServiceApp(TestCase):
             allow_redirects=False,
             pool=self.pool)
 
-        self.assertEqual(resp.code, 302)
+        self.assertEqual(resp.code, 301)
         [location] = resp.headers.getRawHeaders('location')
         self.assertEqual(location, url)
 
