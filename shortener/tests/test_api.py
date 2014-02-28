@@ -79,7 +79,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url_simple(self):
-        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
 
         resp = yield treq.get(
@@ -93,7 +93,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url_404(self):
-        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
 
         resp = yield treq.get(
@@ -111,7 +111,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_short_url_generation(self):
-        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
         url2 = yield self.service.shorten_url(url + '2')
         url3 = yield self.service.shorten_url(url + '3')
@@ -121,7 +121,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_repeat_url_generation(self):
-        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
         url2 = yield self.service.shorten_url(url + '2')
         url3 = yield self.service.shorten_url(url + '2')
@@ -131,7 +131,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url(self):
-        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url + '1')
         yield self.service.shorten_url(url + '2')
         yield self.service.shorten_url(url + '3')
@@ -142,7 +142,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_short_url_sequencing(self):
-        url = 'http://en.wikikipedia.org/wiki/Cthulhu'
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
         urls = [''.join([url, str(a)]) for a in range(1, 100)]
         for u in urls:
             yield self.service.shorten_url(u)
