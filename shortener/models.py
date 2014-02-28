@@ -1,7 +1,7 @@
 import hashlib
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from sqlalchemy.sql import and_
 from twisted.internet.defer import inlineCallbacks, returnValue
 
@@ -23,7 +23,7 @@ class ShortenerTables(TableCollection):
         Column("user_token", String(255), nullable=False, index=True),
         Column("hash", String(32), index=True),
         Column("short_url", String(255), index=True),
-        Column("long_url", String(255)),
+        Column("long_url", Text()),
         Column("created_at", DateTime(timezone=False))
     )
 
