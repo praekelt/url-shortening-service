@@ -19,7 +19,6 @@ setup(
         'aludel',
         'treq',
         'psycopg2',
-        'coverage'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
