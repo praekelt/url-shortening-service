@@ -117,7 +117,7 @@ class TestShortenerServiceApp(TestCase):
         url3 = yield self.service.shorten_url(url + '3')
         url4 = yield self.service.shorten_url(url + '4')
         urls = [url1, url2, url3, url4]
-        self.assertEqual(len(list(set(urls))), 4)
+        self.assertEqual(len(set(urls)), 4)
 
     @inlineCallbacks
     def test_repeat_url_generation(self):
@@ -127,7 +127,7 @@ class TestShortenerServiceApp(TestCase):
         url3 = yield self.service.shorten_url(url + '2')
         url4 = yield self.service.shorten_url(url + '1')
         urls = [url1, url2, url3, url4]
-        self.assertEqual(len(list(set(urls))), 2)
+        self.assertEqual(len(set(urls)), 2)
 
     @inlineCallbacks
     def test_resolve_url(self):
