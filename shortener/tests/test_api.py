@@ -55,7 +55,7 @@ class TestShortenerServiceApp(TestCase):
             'user_token': 'bar',
         }
         resp = yield treq.put(
-            self.make_url('/create'),
+            self.make_url('/api/create'),
             data=json.dumps(payload),
             allow_redirects=False,
             pool=self.pool)
@@ -69,7 +69,7 @@ class TestShortenerServiceApp(TestCase):
             'long_url': 'foo'
         }
         resp = yield treq.put(
-            self.make_url('/create'),
+            self.make_url('/api/create'),
             data=json.dumps(payload),
             allow_redirects=False,
             pool=self.pool)
