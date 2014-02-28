@@ -103,15 +103,14 @@ class ShortenerServiceApp(object):
         finally:
             yield conn.close()
 
-    def shuffle_string(self, str):
-        shuffle = lambda seq: random.Random(1234).sample(seq, len(seq))
-        return ''.join(shuffle(list(str)))
+    def shuffle(self, items):
+        return random.Random(1234).sample(items, len(items))
 
     def generate_token(self, counter, alphabet=DEFAULT_ALPHABET):
         if not isinstance(counter, int):
             raise TypeError('an integer is required')
 
-        alphabet = self.shuffle_string(alphabet)
+        alphabet = self.shuffle(alphabet)
         base = len(alphabet)
         counter += SHORT_URL_OFFSET
 
