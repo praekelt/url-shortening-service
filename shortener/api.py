@@ -119,8 +119,7 @@ class ShortenerServiceApp(object):
             digits.append(alphabet[counter % base])
             counter = counter // base
 
-        digits.reverse()
-        return ''.join(digits)
+        return ''.join(self.shuffle(digits))
 
     @inlineCallbacks
     def get_row_by_short_url(self, short_url):
