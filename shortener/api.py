@@ -1,4 +1,5 @@
 # -*- test-case-name: shortener.tests.test_api -*-
+import random
 import string
 from urlparse import urljoin, urlparse
 
@@ -11,6 +12,8 @@ from aludel.service import service, handler, get_json_params, APIError
 from shortener.models import ShortenerTables, NoShortenerTables
 
 DEFAULT_ALPHABET = string.digits + string.ascii_letters
+SHORT_URL_OFFSET = 4000
+
 DEFAULT_USER_TOKEN = 'generic-user-token'
 
 
@@ -100,12 +103,17 @@ class ShortenerServiceApp(object):
         finally:
             yield conn.close()
 
+    def shuffle_string(self, str):
+        shuffle = lambda seq: random.Random(1234).sample(seq, len(seq))
+        return ''.join(shuffle(list(str)))
+
     def generate_token(self, counter, alphabet=DEFAULT_ALPHABET):
         if not isinstance(counter, int):
             raise TypeError('an integer is required')
+
+        alphabet = self.shuffle_string(alphabet)
         base = len(alphabet)
-        if counter == 0:
-            return alphabet[0]
+        counter += SHORT_URL_OFFSET
 
         digits = []
         while counter > 0:

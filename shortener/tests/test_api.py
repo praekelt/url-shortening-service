@@ -61,7 +61,7 @@ class TestShortenerServiceApp(TestCase):
             pool=self.pool)
 
         result = yield treq.json_content(resp)
-        self.assertEqual(result['short_url'], 'http://wtxt.io/1')
+        self.assertEqual(result['short_url'], 'http://wtxt.io/q0r')
 
     @inlineCallbacks
     def test_create_url_no_user_token(self):
@@ -75,7 +75,7 @@ class TestShortenerServiceApp(TestCase):
             pool=self.pool)
 
         result = yield treq.json_content(resp)
-        self.assertEqual(result['short_url'], 'http://wtxt.io/1')
+        self.assertEqual(result['short_url'], 'http://wtxt.io/q0r')
 
     @inlineCallbacks
     def test_resolve_url_simple(self):
@@ -83,7 +83,7 @@ class TestShortenerServiceApp(TestCase):
         yield self.service.shorten_url(url)
 
         resp = yield treq.get(
-            self.make_url('/1'),
+            self.make_url('/q0r'),
             allow_redirects=False,
             pool=self.pool)
 
@@ -107,7 +107,7 @@ class TestShortenerServiceApp(TestCase):
     def test_url_shortening(self):
         long_url = 'http://en.wikipedia.org/wiki/Cthulhu'
         short_url = yield self.service.shorten_url(long_url)
-        self.assertEqual(short_url, 'http://wtxt.io/1')
+        self.assertEqual(short_url, 'http://wtxt.io/q0r')
 
     @inlineCallbacks
     def test_short_url_generation(self):
@@ -137,7 +137,7 @@ class TestShortenerServiceApp(TestCase):
         yield self.service.shorten_url(url + '3')
         yield self.service.shorten_url(url + '4')
 
-        result = yield self.service.get_row_by_short_url('4')
+        result = yield self.service.get_row_by_short_url('q0H')
         self.assertEqual(result['long_url'], url + '4')
 
     @inlineCallbacks
@@ -147,8 +147,8 @@ class TestShortenerServiceApp(TestCase):
         for u in urls:
             yield self.service.shorten_url(u)
 
-        result = yield self.service.get_row_by_short_url('1p')
-        self.assertEqual(result['long_url'], url + '87')
+        result = yield self.service.get_row_by_short_url('qR1')
+        self.assertEqual(result['long_url'], url + '40')
 
-        result = yield self.service.get_row_by_short_url('1b')
-        self.assertEqual(result['long_url'], url + '73')
+        result = yield self.service.get_row_by_short_url('qR3')
+        self.assertEqual(result['long_url'], url + '55')
