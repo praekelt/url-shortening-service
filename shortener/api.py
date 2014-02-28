@@ -1,6 +1,4 @@
 # -*- test-case-name: shortener.tests.test_api -*-
-import random
-import string
 from urlparse import urljoin, urlparse
 
 from twisted.internet.defer import inlineCallbacks, returnValue
@@ -10,9 +8,7 @@ from aludel.database import get_engine
 from aludel.service import service, handler, get_json_params, APIError
 
 from shortener.models import ShortenerTables, NoShortenerTables
-
-DEFAULT_ALPHABET = string.digits + string.ascii_letters
-SHORT_URL_OFFSET = 4000
+from shortener.utils import generate_token
 
 DEFAULT_USER_TOKEN = 'generic-user-token'
 
@@ -69,7 +65,7 @@ class ShortenerServiceApp(object):
         row = yield self.get_or_create_row(long_url, user_token)
         short_url = row['short_url']
         if not row['short_url']:
-            short_url = self.generate_token(row['id'])
+            short_url = generate_token(row['id'])
             yield self.update_short_url(row['id'], short_url)
         returnValue(urljoin(self.config['host_domain'], short_url))
 
@@ -102,24 +98,6 @@ class ShortenerServiceApp(object):
             yield tables.update_short_url(row_id, short_url)
         finally:
             yield conn.close()
-
-    def shuffle(self, items):
-        return random.Random(1234).sample(items, len(items))
-
-    def generate_token(self, counter, alphabet=DEFAULT_ALPHABET):
-        if not isinstance(counter, int):
-            raise TypeError('an integer is required')
-
-        alphabet = self.shuffle(alphabet)
-        base = len(alphabet)
-        counter += SHORT_URL_OFFSET
-
-        digits = []
-        while counter > 0:
-            digits.append(alphabet[counter % base])
-            counter = counter // base
-
-        return ''.join(self.shuffle(digits))
 
     @inlineCallbacks
     def get_row_by_short_url(self, short_url):
