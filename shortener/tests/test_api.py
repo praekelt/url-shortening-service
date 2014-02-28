@@ -39,11 +39,17 @@ class TestShortenerServiceApp(TestCase):
         site = Site(self.service.app.resource())
         self.listener = reactor.listenTCP(0, site, interface='localhost')
         self.listener_port = self.listener.getHost().port
+        self._drop_tables()
         self.conn = yield self.service.engine.connect()
-        self.addCleanup(self._drop_tables)
         yield self.service.create_tables()
         self.addCleanup(self.listener.loseConnection)
         self.addCleanup(self.pool.closeCachedConnections)
+
+    @inlineCallbacks
+    def tearDown(self):
+        yield self.conn.close()
+        self._drop_tables()
+        yield self.listener.loseConnection()
 
     def make_url(self, path):
         return 'http://localhost:%s%s' % (self.listener_port, path)
@@ -152,3 +158,13 @@ class TestShortenerServiceApp(TestCase):
 
         result = yield self.service.get_row_by_short_url('q3R')
         self.assertEqual(result['long_url'], url + '55')
+
+    @inlineCallbacks
+    def test_account_init(self):
+        self._drop_tables()
+        resp = yield treq.get(
+            self.make_url('/api/init'),
+            allow_redirects=False,
+            pool=self.pool)
+        result = yield treq.json_content(resp)
+        self.assertFalse(result['created'])

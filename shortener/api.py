@@ -32,16 +32,14 @@ class ShortenerServiceApp(object):
         yield request.setResponseCode(http.CREATED)
         returnValue({'short_url': short_url})
 
-    @handler('/<string:short_url>', methods=['GET'])
+    @handler('/api/init', methods=['GET'])
     @inlineCallbacks
-    def resolve_url(self, request, short_url):
-        row = yield self.get_row_by_short_url(short_url)
-        if row and row['long_url']:
-            request.setResponseCode(http.MOVED_PERMANENTLY)
-            request.setHeader(b"location", row['long_url'].encode('utf-8'))
-        else:
-            request.setResponseCode(http.NOT_FOUND)
-        returnValue({})
+    def init_account(self, request):
+        '''
+        Initializes the account and creates the database tables
+        '''
+        result = yield self.create_tables()
+        returnValue(result)
 
     @inlineCallbacks
     def create_tables(self):
@@ -56,6 +54,17 @@ class ShortenerServiceApp(object):
             yield conn.close()
 
         returnValue({'created': not already_exists})
+
+    @handler('/<string:short_url>', methods=['GET'])
+    @inlineCallbacks
+    def resolve_url(self, request, short_url):
+        row = yield self.get_row_by_short_url(short_url)
+        if row and row['long_url']:
+            request.setResponseCode(http.MOVED_PERMANENTLY)
+            request.setHeader(b"location", row['long_url'].encode('utf-8'))
+        else:
+            request.setResponseCode(http.NOT_FOUND)
+        returnValue({})
 
     @inlineCallbacks
     def shorten_url(self, long_url, user_token=DEFAULT_USER_TOKEN):
