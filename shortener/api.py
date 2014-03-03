@@ -38,11 +38,6 @@ class ShortenerServiceApp(object):
         '''
         Initializes the account and creates the database tables
         '''
-        result = yield self.create_tables()
-        returnValue(result)
-
-    @inlineCallbacks
-    def create_tables(self):
         conn = yield self.engine.connect()
         account = self.config['account']
         tables = ShortenerTables(account, conn)

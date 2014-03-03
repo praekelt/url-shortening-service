@@ -41,7 +41,11 @@ class TestShortenerServiceApp(TestCase):
         self.listener_port = self.listener.getHost().port
         self._drop_tables()
         self.conn = yield self.service.engine.connect()
-        yield self.service.create_tables()
+        yield treq.get(
+            self.make_url('/api/init'),
+            allow_redirects=False,
+            pool=self.pool
+        )
         self.addCleanup(self.listener.loseConnection)
         self.addCleanup(self.pool.closeCachedConnections)
 
