@@ -8,7 +8,7 @@ from aludel.database import get_engine
 from aludel.service import service, handler, get_json_params, APIError
 
 from shortener.models import ShortenerTables, NoShortenerTables
-from shortener.utils import generate_token
+from shortener.keygen import generate_token
 
 DEFAULT_USER_TOKEN = 'generic-user-token'
 
