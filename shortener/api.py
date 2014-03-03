@@ -62,7 +62,7 @@ class ShortenerServiceApp(object):
         returnValue({})
 
     @inlineCallbacks
-    def shorten_url(self, long_url, user_token=DEFAULT_USER_TOKEN):
+    def shorten_url(self, long_url, user_token=None):
         if not user_token:
             user_token = DEFAULT_USER_TOKEN
 
