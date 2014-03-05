@@ -18,6 +18,7 @@ setup(
         'Twisted',
         'aludel',
         'treq',
+        'psycopg2',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
