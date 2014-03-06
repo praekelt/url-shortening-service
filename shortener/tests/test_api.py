@@ -27,7 +27,6 @@ class TestShortenerServiceApp(TestCase):
         cfg = {
             'host_domain': 'http://wtxt.io',
             'account': 'milton-test-account',
-            #'connection_string': 'postgresql://shortener:shortener@localhost:5432/shortener'
             'connection_string': 'sqlite://'
         }
         self.pool = HTTPConnectionPool(reactor, persistent=False)
