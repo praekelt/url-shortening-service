@@ -1,4 +1,5 @@
 # -*- test-case-name: shortener.tests.test_shortener_service -*-
+import yaml
 
 from twisted.application import strports
 from twisted.internet import reactor
@@ -7,19 +8,25 @@ from twisted.web import server
 
 from shortener.api import ShortenerServiceApp
 
-
 DEFAULT_PORT = 'tcp:8080'
 
 
 class Options(usage.Options):
     """Command line args when run as a twistd plugin"""
-    optParameters = [["endpoint", "e", DEFAULT_PORT, "Port number"]]
+    optParameters = [
+        ["config", "c", "shortener/config.yaml", "The service config file"],
+    ]
 
     def postOptions(self):
         pass
 
 
 def makeService(options):
-    app = ShortenerServiceApp(reactor=reactor)
+    config_file = options['config']
+    with open(config_file, 'r') as fp:
+        config = dict(yaml.safe_load(fp))
+
+    app = ShortenerServiceApp(reactor=reactor, pool=None, config=config)
     site = server.Site(app.app.resource())
-    return strports.service(options['endpoint'], site)
+
+    return strports.service(config.get('port', DEFAULT_PORT), site)
