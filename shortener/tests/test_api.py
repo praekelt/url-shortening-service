@@ -174,4 +174,4 @@ class TestShortenerServiceApp(TestCase):
             allow_redirects=False,
             pool=self.pool)
         result = yield treq.json_content(resp)
-        self.assertFalse(result['created'])
+        self.assertTrue(result['created'])
