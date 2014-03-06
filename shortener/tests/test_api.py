@@ -1,4 +1,5 @@
 import json
+import os
 import treq
 
 from twisted.internet import reactor
@@ -24,10 +25,13 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def setUp(self):
         reactor.suggestThreadPoolSize(1)
+        connection_string = os.environ.get(
+            "SHORTENER_TEST_CONNECTION_STRING", "sqlite://")
+
         cfg = {
             'host_domain': 'http://wtxt.io',
             'account': 'milton-test-account',
-            'connection_string': 'sqlite://'
+            'connection_string': connection_string,
         }
         self.pool = HTTPConnectionPool(reactor, persistent=False)
         self.service = ShortenerServiceApp(
