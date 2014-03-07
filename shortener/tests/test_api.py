@@ -155,15 +155,15 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_short_url_sequencing(self):
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
-        urls = [''.join([url, str(a)]) for a in range(1, 100)]
+        urls = [''.join([url, str(a)]) for a in range(1, 10)]
         for u in urls:
             yield self.service.shorten_url(u)
 
-        result = yield self.service.get_row_by_short_url('q1R')
-        self.assertEqual(result['long_url'], url + '40')
+        result = yield self.service.get_row_by_short_url('qs0')
+        self.assertEqual(result['long_url'], url + '5')
 
-        result = yield self.service.get_row_by_short_url('q3R')
-        self.assertEqual(result['long_url'], url + '55')
+        result = yield self.service.get_row_by_short_url('qp0')
+        self.assertEqual(result['long_url'], url + '6')
 
     @inlineCallbacks
     def test_account_init(self):
