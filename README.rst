@@ -24,7 +24,7 @@ Install
 
 Config
 ~~~~~~
-With the `-c` parameter, you can specify a config file. The default is locatation is `shortener/config.yaml`
+With the `-c` parameter, you can specify a config file. The default locatation is `shortener/config.yaml`
 Here's an example config file::
 
     host_domain: http://wtxt.io
