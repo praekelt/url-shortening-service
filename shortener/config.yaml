@@ -1,6 +1,0 @@
-host_domain: http://wtxt.io
-account: wikipedia
-connection_string: postgresql://shortener:shortener@localhost:5432/shortener
-port: tcp:8080
-handlers:
-  - wurfl: devproxy.handlers.wurfl_handler.simple.SimpleWurflHandler
