@@ -24,6 +24,7 @@ Install
 
 Config
 ~~~~~~
+
 With the `-c` parameter, you can specify a config file. The default locatation is `shortener/config.yaml`
 Here's an example config file::
 
