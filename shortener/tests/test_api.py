@@ -36,7 +36,6 @@ class TestShortenerServiceApp(TestCase):
         self.pool = HTTPConnectionPool(reactor, persistent=False)
         self.service = ShortenerServiceApp(
             reactor=reactor,
-            pool=self.pool,
             config=cfg
         )
         site = Site(self.service.app.resource())

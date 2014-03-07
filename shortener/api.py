@@ -16,7 +16,7 @@ DEFAULT_USER_TOKEN = 'generic-user-token'
 @service
 class ShortenerServiceApp(object):
 
-    def __init__(self, reactor, pool, config):
+    def __init__(self, reactor, config):
         self.config = config
         self.engine = get_engine(config['connection_string'], reactor)
 

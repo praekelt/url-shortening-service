@@ -26,7 +26,7 @@ def makeService(options):
     with open(config_file, 'r') as fp:
         config = dict(yaml.safe_load(fp))
 
-    app = ShortenerServiceApp(reactor=reactor, pool=None, config=config)
+    app = ShortenerServiceApp(reactor=reactor, config=config)
     site = server.Site(app.app.resource())
 
     return strports.service(config.get('port', DEFAULT_PORT), site)
