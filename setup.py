@@ -19,6 +19,7 @@ setup(
         'aludel',
         'treq',
         'psycopg2',
+        'txCarbonClient',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
