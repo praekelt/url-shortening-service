@@ -10,6 +10,7 @@ install:
 before_script:
   - psql -c 'create database shortener_test;' -U postgres
 script:
+  - trial shortener
   - SHORTENER_TEST_CONNECTION_STRING='postgresql://postgres@localhost:5432/shortener_test' coverage run --source=shortener `which trial` shortener
 after_success:
   - coveralls
