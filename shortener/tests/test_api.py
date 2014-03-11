@@ -10,6 +10,7 @@ from twisted.web.server import Site
 
 from aludel.database import MetaData
 from shortener.api import ShortenerServiceApp
+from shortener.models import ShortenerTables
 
 
 class TestShortenerServiceApp(TestCase):
@@ -21,6 +22,16 @@ class TestShortenerServiceApp(TestCase):
         md.reflect()
         md.drop_all()
         assert self.service.engine._engine.table_names() == []
+
+    @inlineCallbacks
+    def _create_tables(self, conn):
+        tables = ShortenerTables('milton-test-account', conn)
+        try:
+            already_exists = yield tables.exists()
+            if not already_exists:
+                yield tables.create_tables()
+        finally:
+            yield conn.close()
 
     @inlineCallbacks
     def setUp(self):
@@ -41,13 +52,7 @@ class TestShortenerServiceApp(TestCase):
         site = Site(self.service.app.resource())
         self.listener = reactor.listenTCP(0, site, interface='localhost')
         self.listener_port = self.listener.getHost().port
-        self._drop_tables()
         self.conn = yield self.service.engine.connect()
-        yield treq.get(
-            self.make_url('/api/init'),
-            allow_redirects=False,
-            pool=self.pool
-        )
         self.addCleanup(self.listener.loseConnection)
         self.addCleanup(self.pool.closeCachedConnections)
 
@@ -62,6 +67,8 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_create_url_simple(self):
+        yield self._create_tables(self.conn)
+
         payload = {
             'long_url': 'foo',
             'user_token': 'bar',
@@ -77,6 +84,8 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_create_url_no_user_token(self):
+        yield self._create_tables(self.conn)
+
         payload = {
             'long_url': 'foo'
         }
@@ -91,6 +100,8 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url_simple(self):
+        yield self._create_tables(self.conn)
+
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
 
@@ -105,6 +116,8 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url_404(self):
+        yield self._create_tables(self.conn)
+
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
 
@@ -117,12 +130,16 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_url_shortening(self):
+        yield self._create_tables(self.conn)
+
         long_url = 'http://en.wikipedia.org/wiki/Cthulhu'
         short_url = yield self.service.shorten_url(long_url)
         self.assertEqual(short_url, 'http://wtxt.io/qr0')
 
     @inlineCallbacks
     def test_short_url_generation(self):
+        yield self._create_tables(self.conn)
+
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
         url2 = yield self.service.shorten_url(url + '2')
@@ -133,6 +150,8 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_repeat_url_generation(self):
+        yield self._create_tables(self.conn)
+
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
         url2 = yield self.service.shorten_url(url + '2')
@@ -143,6 +162,8 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url(self):
+        yield self._create_tables(self.conn)
+
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url + '1')
         yield self.service.shorten_url(url + '2')
@@ -154,6 +175,8 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_short_url_sequencing(self):
+        yield self._create_tables(self.conn)
+
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         urls = [''.join([url, str(a)]) for a in range(1, 10)]
         for u in urls:
@@ -167,7 +190,6 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_account_init(self):
-        self._drop_tables()
         resp = yield treq.get(
             self.make_url('/api/init'),
             allow_redirects=False,
