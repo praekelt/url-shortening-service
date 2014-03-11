@@ -10,17 +10,21 @@ class ShortenerCarbonClient(object):
             config['graphite_port']
         )
 
-    def get_metric_bucket(self, metric):
-        return '%s.%s' % (self.config['account'], metric)
+    def get_count_metric(self, user_token, metric):
+        return '%(account)s.%(metric)s.%(user_token)s.count' % {
+            'account': self.config['account'],
+            'user_token': user_token,
+            'metric': metric,
+        }
 
-    def publish_created_url_metrics(self):
-        #self.service.publish_metric(self.get_metric_bucket('created'), 1)
-        pass
+    def publish_created_url_metrics(self, user_token):
+        metric = self.get_count_metric(user_token, 'created')
+        self.service.publish_metric(metric, 1)
 
     def publish_expanded_url_metrics(self):
-        #self.service.publish_metric(self.get_metric_bucket('expanded'), 1)
-        pass
+        metric = self.get_count_metric(user_token, 'expanded')
+        self.service.publish_metric(metric, 1)
 
     def publish_invalid_url_metrics(self):
-        #self.service.publish_metric(self.get_metric_bucket('invalid'), 1)
-        pass
+        metric = self.get_count_metric(user_token, 'invalid')
+        self.service.publish_metric(metric, 1)
