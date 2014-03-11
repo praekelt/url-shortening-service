@@ -24,24 +24,15 @@ class TestShortenerServiceApp(TestCase):
         assert self.service.engine._engine.table_names() == []
 
     @inlineCallbacks
-    def _create_tables(self, conn):
-        tables = ShortenerTables('milton-test-account', conn)
-        try:
-            already_exists = yield tables.exists()
-            if not already_exists:
-                yield tables.create_tables()
-        finally:
-            yield conn.close()
-
-    @inlineCallbacks
     def setUp(self):
         reactor.suggestThreadPoolSize(1)
         connection_string = os.environ.get(
             "SHORTENER_TEST_CONNECTION_STRING", "sqlite://")
 
+        self.account = 'test-account'
         cfg = {
             'host_domain': 'http://wtxt.io',
-            'account': 'milton-test-account',
+            'account': self.account,
             'connection_string': connection_string,
         }
         self.pool = HTTPConnectionPool(reactor, persistent=False)
@@ -67,7 +58,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_create_url_simple(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         payload = {
             'long_url': 'foo',
@@ -84,7 +75,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_create_url_no_user_token(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         payload = {
             'long_url': 'foo'
@@ -100,7 +91,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url_simple(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
@@ -116,7 +107,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url_404(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
@@ -130,7 +121,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_url_shortening(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         long_url = 'http://en.wikipedia.org/wiki/Cthulhu'
         short_url = yield self.service.shorten_url(long_url)
@@ -138,7 +129,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_short_url_generation(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
@@ -150,7 +141,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_repeat_url_generation(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
@@ -162,7 +153,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_resolve_url(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url + '1')
@@ -175,7 +166,7 @@ class TestShortenerServiceApp(TestCase):
 
     @inlineCallbacks
     def test_short_url_sequencing(self):
-        yield self._create_tables(self.conn)
+        yield ShortenerTables(self.account, self.conn).create_tables()
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         urls = [''.join([url, str(a)]) for a in range(1, 10)]
