@@ -34,6 +34,8 @@ class TestShortenerServiceApp(TestCase):
             'host_domain': 'http://wtxt.io',
             'account': self.account,
             'connection_string': connection_string,
+            'graphite_host': 'localhost',
+            'graphite_port': 2001,
         }
         self.pool = HTTPConnectionPool(reactor, persistent=False)
         self.service = ShortenerServiceApp(

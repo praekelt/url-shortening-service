@@ -7,7 +7,7 @@ class ShortenerCarbonClient(object):
     def __init__(self, reactor, config):
         self.config = config
         self.domain = urlparse(config['host_domain']).netloc.replace('.', '')
-        self.service = CarbonClientService(
+        self.carbon_client = CarbonClientService(
             reactor,
             config['graphite_host'],
             config['graphite_port']
@@ -20,17 +20,14 @@ class ShortenerCarbonClient(object):
             'metric': metric,
         }
 
-    @inlineCallbacks
-    def publish_created_url_metrics(self, user_token):
+    def publish_created_url_metrics(self):
         metric = self.get_metric_name('created.count')
-        yield self.service.publish_metric(metric, 1)
+        return self.carbon_client.publish_metric(metric, 1)
 
-    @inlineCallbacks
     def publish_expanded_url_metrics(self):
         metric = self.get_metric_name('expanded.count')
-        yield self.service.publish_metric(metric, 1)
+        return self.carbon_client.publish_metric(metric, 1)
 
-    @inlineCallbacks
     def publish_invalid_url_metrics(self):
         metric = self.get_metric_name('invalid.count')
-        yield self.service.publish_metric(metric, 1)
+        return self.carbon_client.publish_metric(metric, 1)

@@ -2,11 +2,12 @@
 import yaml
 
 from twisted.application import strports
-from twisted.internet import reactor
+from twisted.internet import reactor, service
 from twisted.python import usage
 from twisted.web import server
 
 from shortener.api import ShortenerServiceApp
+from shortener.metrics import ShortenerCarbonClient
 
 DEFAULT_PORT = 'tcp:8080'
 
@@ -27,6 +28,15 @@ def makeService(options):
         config = dict(yaml.safe_load(fp))
 
     app = ShortenerServiceApp(reactor=reactor, config=config)
+    metrics = ShortenerCarbonClient(reactor=reactor, config=config)
+
     site = server.Site(app.app.resource())
 
-    return strports.service(config.get('port', DEFAULT_PORT), site)
+    main_service = service.MultiService()
+
+    app_service = strports.service(config.get('port', DEFAULT_PORT), site)
+    app_service.setServiceParent(main_service)
+
+    metrics.carbon_client.setServiceParent(main_service)
+
+    return main_service
