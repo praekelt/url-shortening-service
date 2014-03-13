@@ -1,6 +1,49 @@
 from urlparse import urlparse
-from txCarbonClient import CarbonClientService
-from twisted.internet.defer import inlineCallbacks
+
+from twisted.internet.defer import Deferred
+from twisted.internet.protocol import ClientFactory, Protocol
+
+from shortener.reconnecting_client import ReconnectingClientService
+
+
+class CarbonClientProtocol(Protocol):
+    def publish_metric(self, name, value, timestamp):
+        self.transport.write("%s %s %s\n" % (name, value, timestamp))
+
+
+class CarbonClientFactory(ClientFactory):
+    protocol = CarbonClientProtocol
+
+
+class CarbonClientService(ReconnectingClientService):
+    def __init__(self, endpoint):
+        factory = CarbonClientFactory()
+        ReconnectingClientService.__init__(self, endpoint, factory)
+        self._metrics_queue = []
+        self.protocol_instance = None
+        self.connect_d = Deferred()
+
+    def publish_metric(self, name, value, timestamp):
+        self._metrics_queue.append((name, value, timestamp))
+        self._process_queue()
+
+    def _process_queue(self):
+        if self.protocol_instance is not None:
+            while self._metrics_queue:
+                name, value, timestamp = self._metrics_queue.pop(0)
+                self.protocol_instance.publish_metric(name, value, timestamp)
+
+    def clientConnected(self, protocol):
+        self.protocol_instance = protocol
+        ReconnectingClientService.clientConnected(self, protocol)
+        d = self.connect_d
+        self.connect_d = Deferred()
+        self._process_queue()
+        d.callback(protocol)
+
+    def clientConnectionLost(self, reason):
+        self.protocol_instance = None
+        ReconnectingClientService.clientConnectionLost(self, reason)
 
 
 class ShortenerCarbonClient(object):
