@@ -20,3 +20,16 @@ Install
 
 .. |coveralls| image:: https://coveralls.io/repos/praekelt/url-shortening-service/badge.png?branch=develop
 .. _coveralls: https://coveralls.io/r/praekelt/url-shortening-service
+
+
+Config
+~~~~~~
+
+With the `-c` parameter, you can specify a config file. The default locatation is `shortener/config.yaml`
+Here's an example config file::
+
+    host_domain: http://wtxt.io
+    account: wikipedia
+    connection_string: postgresql://test:shortener_test@localhost:5432/shortener_test
+    port: tcp:8080
+
