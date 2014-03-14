@@ -48,6 +48,8 @@ class TestShortenerServiceApp(TestCase):
         self.tr = DisconnectingStringTransport()
         endpoint = StringTransportClientEndpoint(reactor, self.tr)
         self.service.metrics.carbon_client = CarbonClientService(endpoint)
+        self.service.metrics.carbon_client.startService()
+        yield self.service.metrics.carbon_client.connect_d
 
         site = Site(self.service.app.resource())
         self.listener = reactor.listenTCP(0, site, interface='localhost')
@@ -69,8 +71,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_create_url_simple(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
 
         payload = {
             'long_url': 'foo',
@@ -93,10 +93,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_create_url_no_user_token(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
-
-        self.assertEqual(self.tr.value(), "")
 
         payload = {
             'long_url': 'foo'
@@ -115,10 +111,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_resolve_url_simple(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
-
-        self.assertEqual(self.tr.value(), "")
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
@@ -142,10 +134,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_resolve_url_404(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
-
-        self.assertEqual(self.tr.value(), "")
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         yield self.service.shorten_url(url)
@@ -166,10 +154,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_url_shortening(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
-
-        self.assertEqual(self.tr.value(), "")
 
         long_url = 'http://en.wikipedia.org/wiki/Cthulhu'
         short_url = yield self.service.shorten_url(long_url)
@@ -180,10 +164,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_short_url_generation(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
-
-        self.assertEqual(self.tr.value(), "")
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
@@ -198,8 +178,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_repeat_url_generation(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         url1 = yield self.service.shorten_url(url + '1')
@@ -227,8 +205,6 @@ class TestShortenerServiceApp(TestCase):
     @inlineCallbacks
     def test_short_url_sequencing(self):
         yield ShortenerTables(self.account, self.conn).create_tables()
-        self.service.metrics.carbon_client.startService()
-        yield self.service.metrics.carbon_client.connect_d
 
         url = 'http://en.wikipedia.org/wiki/Cthulhu'
         urls = [''.join([url, str(a)]) for a in range(1, 10)]
