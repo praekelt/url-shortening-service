@@ -127,7 +127,7 @@ class TestShortenerServiceApp(TestCase):
         [location] = resp.headers.getRawHeaders('location')
         self.assertEqual(location, url)
 
-        conn_queue = self.tr.value().strip().split('\n')
+        conn_queue = self.tr.value().splitlines()
         self.assertTrue(
             conn_queue[1].startswith("test-account.wtxtio.expanded.count 1"))
 
@@ -147,7 +147,7 @@ class TestShortenerServiceApp(TestCase):
             pool=self.pool)
 
         self.assertEqual(resp.code, 404)
-        conn_queue = self.tr.value().strip().split('\n')
+        conn_queue = self.tr.value().splitlines()
         self.assertTrue(
             conn_queue[1].startswith("test-account.wtxtio.invalid.count 1"))
 
@@ -172,7 +172,7 @@ class TestShortenerServiceApp(TestCase):
         url4 = yield self.service.shorten_url(url + '4')
         urls = [url1, url2, url3, url4]
         self.assertEqual(len(set(urls)), 4)
-        conn_queue = self.tr.value().strip().split('\n')
+        conn_queue = self.tr.value().splitlines()
         self.assertEqual(len(conn_queue), 4)
 
     @inlineCallbacks
@@ -186,7 +186,7 @@ class TestShortenerServiceApp(TestCase):
         url4 = yield self.service.shorten_url(url + '1')
         urls = [url1, url2, url3, url4]
         self.assertEqual(len(set(urls)), 2)
-        conn_queue = self.tr.value().strip().split('\n')
+        conn_queue = self.tr.value().splitlines()
         self.assertEqual(len(conn_queue), 2)
 
     @inlineCallbacks
@@ -217,7 +217,7 @@ class TestShortenerServiceApp(TestCase):
         result = yield self.service.get_row_by_short_url('qp0')
         self.assertEqual(result['long_url'], url + '6')
 
-        conn_queue = self.tr.value().strip().split('\n')
+        conn_queue = self.tr.value().splitlines()
         self.assertEqual(len(conn_queue), 9)
 
     @inlineCallbacks
