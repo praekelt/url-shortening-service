@@ -1,7 +1,9 @@
+import time
 from urlparse import urlparse
 
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import ClientFactory, Protocol
+from twisted.internet.endpoints import clientFromString
 
 from shortener.reconnecting_client import ReconnectingClientService
 
@@ -46,15 +48,13 @@ class CarbonClientService(ReconnectingClientService):
         ReconnectingClientService.clientConnectionLost(self, reason)
 
 
-class ShortenerCarbonClient(object):
+class ShortenerMetrics(object):
     def __init__(self, reactor, config):
         self.config = config
         self.domain = urlparse(config['host_domain']).netloc.replace('.', '')
-        self.carbon_client = CarbonClientService(
-            reactor,
-            config['graphite_host'],
-            config['graphite_port']
-        )
+
+        endpoint = clientFromString(reactor, config['graphite_endpoint'])
+        self.carbon_client = CarbonClientService(endpoint)
 
     def get_metric_name(self, metric):
         return '%(account)s.%(domain)s.%(metric)s' % {
@@ -65,12 +65,12 @@ class ShortenerCarbonClient(object):
 
     def publish_created_url_metrics(self):
         metric = self.get_metric_name('created.count')
-        return self.carbon_client.publish_metric(metric, 1)
+        return self.carbon_client.publish_metric(metric, 1, time.time())
 
     def publish_expanded_url_metrics(self):
         metric = self.get_metric_name('expanded.count')
-        return self.carbon_client.publish_metric(metric, 1)
+        return self.carbon_client.publish_metric(metric, 1, time.time())
 
     def publish_invalid_url_metrics(self):
         metric = self.get_metric_name('invalid.count')
-        return self.carbon_client.publish_metric(metric, 1)
+        return self.carbon_client.publish_metric(metric, 1, time.time())
