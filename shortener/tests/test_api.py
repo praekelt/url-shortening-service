@@ -45,6 +45,7 @@ class TestShortenerServiceApp(TestCase):
         site = Site(self.service.app.resource())
         self.listener = reactor.listenTCP(0, site, interface='localhost')
         self.listener_port = self.listener.getHost().port
+        self._drop_tables()
         self.conn = yield self.service.engine.connect()
         self.addCleanup(self.listener.loseConnection)
         self.addCleanup(self.pool.closeCachedConnections)
