@@ -32,4 +32,5 @@ Here's an example config file::
     account: wikipedia
     connection_string: postgresql://test:shortener_test@localhost:5432/shortener_test
     port: tcp:8080
+    graphite_endpoint: tcp:www.example.com:80
 

@@ -9,6 +9,7 @@ from aludel.service import service, handler, get_json_params, APIError
 
 from shortener.models import ShortenerTables, NoShortenerTables
 from shortener.keygen import generate_token
+from shortener.metrics import ShortenerMetrics
 
 DEFAULT_USER_TOKEN = 'generic-user-token'
 
@@ -19,6 +20,7 @@ class ShortenerServiceApp(object):
     def __init__(self, reactor, config):
         self.config = config
         self.engine = get_engine(config['connection_string'], reactor)
+        self.metrics = ShortenerMetrics(reactor, config)
 
     @handler('/api/create', methods=['PUT'])
     @inlineCallbacks
@@ -57,8 +59,10 @@ class ShortenerServiceApp(object):
         if row and row['long_url']:
             request.setResponseCode(http.MOVED_PERMANENTLY)
             request.setHeader(b"location", row['long_url'].encode('utf-8'))
+            yield self.metrics.publish_expanded_url_metrics()
         else:
             request.setResponseCode(http.NOT_FOUND)
+            yield self.metrics.publish_invalid_url_metrics()
         returnValue({})
 
     @inlineCallbacks
@@ -71,6 +75,7 @@ class ShortenerServiceApp(object):
         if not row['short_url']:
             short_url = generate_token(row['id'])
             yield self.update_short_url(row['id'], short_url)
+            yield self.metrics.publish_created_url_metrics()
         returnValue(urljoin(self.config['host_domain'], short_url))
 
     @inlineCallbacks
