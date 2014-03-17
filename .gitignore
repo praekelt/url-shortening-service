@@ -23,6 +23,9 @@ __pycache__
 ve/
 _trial_temp/
 htmlcov/
+logs/
+config/
+tmp/
 
 # Installer logs
 pip-log.txt
