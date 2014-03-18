@@ -1,7 +1,7 @@
 import hashlib
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from sqlalchemy.sql import and_
 from twisted.internet.defer import inlineCallbacks, returnValue
 
