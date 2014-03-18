@@ -84,6 +84,9 @@ class TestHandlers(TestCase):
         self.assertEqual(resp.code, 200)
         result = yield treq.json_content(resp)
         self.assertEqual(result['user_token'], 'test-user')
+        self.assertEqual(result['short_url'], 'qr0')
+        self.assertEqual(result['long_url'], url)
+        self.assertEqual(result['domain'], 'en.wikipedia.org')
 
     @inlineCallbacks
     def test_api_dump_invalid_querystring(self):
