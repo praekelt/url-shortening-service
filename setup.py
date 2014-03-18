@@ -19,6 +19,7 @@ setup(
         'aludel',
         'treq',
         'psycopg2',
+        'PyYaml',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
