@@ -38,6 +38,9 @@ class TestShortenerServiceApp(TestCase):
             'account': self.account,
             'connection_string': connection_string,
             'graphite_endpoint': 'tcp:www.example.com:80',
+            'handlers': [
+                {'dump': 'shortener.handlers.dump.Dump'},
+            ],
         }
         self.pool = HTTPConnectionPool(reactor, persistent=False)
         self.service = ShortenerServiceApp(
@@ -201,6 +204,21 @@ class TestShortenerServiceApp(TestCase):
 
         result = yield self.service.get_row_by_short_url('qH0')
         self.assertEqual(result['long_url'], url + '4')
+
+    @inlineCallbacks
+    def test_resolve_url_hits_counter(self):
+        tables = ShortenerTables(self.account, self.conn)
+        yield tables.create_tables()
+
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
+        yield self.service.shorten_url(url)
+
+        yield self.service.get_row_by_short_url('qr0')
+        yield self.service.get_row_by_short_url('qr0')
+        result = yield self.service.get_row_by_short_url('qr0')
+
+        audit = yield tables.get_audit_row(result['id'])
+        self.assertEqual(audit['hits'], 3)
 
     @inlineCallbacks
     def test_short_url_sequencing(self):
