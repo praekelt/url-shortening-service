@@ -1,8 +1,8 @@
 # -*- test-case-name: shortener.tests.test_shortener_service -*-
 import yaml
 
-from twisted.application import strports
-from twisted.internet import reactor, service
+from twisted.application import strports, service
+from twisted.internet import reactor
 from twisted.python import usage
 from twisted.web import server
 
