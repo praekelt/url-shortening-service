@@ -16,14 +16,14 @@ class Dump(BaseApiHandler):
 
     @inlineCallbacks
     def render(self, request):
-        short_url = request.args.get('url')[0]
+        short_url = request.args.get('url')
         conn = yield self.engine.connect()
         try:
             tables = ShortenerTables(self.config['account'], conn)
             if not short_url:
                 request.setResponseCode(http.NOT_FOUND)
             else:
-                row = yield tables.get_row_by_short_url(short_url)
+                row = yield tables.get_row_by_short_url(short_url[0])
 
                 if row:
                     returnValue(self.format_row(row))

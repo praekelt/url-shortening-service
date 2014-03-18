@@ -84,3 +84,21 @@ class TestHandlers(TestCase):
         self.assertEqual(resp.code, 200)
         result = yield treq.json_content(resp)
         self.assertEqual(result['user_token'], 'test-user')
+
+    @inlineCallbacks
+    def test_api_dump_invalid_querystring(self):
+        yield ShortenerTables(self.account, self.conn).create_tables()
+
+        url = 'http://en.wikipedia.org/wiki/Cthulhu'
+        yield self.service.shorten_url(url, 'test-user')
+        yield treq.get(
+            self.make_url('/qr0'),
+            allow_redirects=False,
+            pool=self.pool)
+
+        resp = yield treq.get(
+            self.make_url('/api/handler/dump'),
+            allow_redirects=False,
+            pool=self.pool)
+
+        self.assertEqual(resp.code, 404)
