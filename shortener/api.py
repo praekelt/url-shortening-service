@@ -21,6 +21,19 @@ class ShortenerServiceApp(object):
         self.config = config
         self.engine = get_engine(config['connection_string'], reactor)
         self.metrics = ShortenerMetrics(reactor, config)
+        self.load_handlers()
+
+    def load_handlers(self):
+        self.handlers = {}
+        for handler_config in self.config['handlers']:
+            [(name, class_path)] = handler_config.items()
+            parts = class_path.split('.')
+            module = '.'.join(parts[:-1])
+            class_name = parts[-1]
+            handler_module = __import__(module, fromlist=[class_name])
+            handler_class = getattr(handler_module, class_name)
+            handler = handler_class(self.config, self.engine)
+            self.handlers[name] = handler
 
     @handler('/api/create', methods=['PUT'])
     @inlineCallbacks
@@ -51,6 +64,17 @@ class ShortenerServiceApp(object):
             yield conn.close()
 
         returnValue({'created': not already_exists})
+
+    @handler('/api/handler/<string:handler_name>', methods=['GET'])
+    @inlineCallbacks
+    def run_handler(self, request, handler_name):
+        handler = self.handlers.get(handler_name)
+        if not handler:
+            request.setResponseCode(http.NOT_FOUND)
+            returnValue({})
+        else:
+            response = yield handler.render(request)
+            returnValue(response)
 
     @handler('/<string:short_url>', methods=['GET'])
     @inlineCallbacks

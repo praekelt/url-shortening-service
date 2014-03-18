@@ -38,6 +38,9 @@ class TestShortenerServiceApp(TestCase):
             'account': self.account,
             'connection_string': connection_string,
             'graphite_endpoint': 'tcp:www.example.com:80',
+            'handlers': [
+                {'dump': 'shortener.handlers.dump.Dump'},
+            ],
         }
         self.pool = HTTPConnectionPool(reactor, persistent=False)
         self.service = ShortenerServiceApp(
