@@ -86,6 +86,7 @@ class TestHandlers(TestCase):
         self.assertEqual(result['user_token'], 'test-user')
         self.assertEqual(result['short_url'], 'qr0')
         self.assertEqual(result['long_url'], url)
+        self.assertEqual(result['hits'], 1)
         self.assertEqual(result['domain'], 'en.wikipedia.org')
 
     @inlineCallbacks

@@ -5,13 +5,14 @@ from twisted.web import http
 
 
 class Dump(BaseApiHandler):
-    def format_row(self, row):
+    def _format(self, row, audit):
         return {
             'domain': row['domain'],
             'user_token': row['user_token'],
             'short_url': row['short_url'],
             'long_url': row['long_url'],
             'created_at': row['created_at'].isoformat(),
+            'hits': audit['hits']
         }
 
     @inlineCallbacks
@@ -24,10 +25,11 @@ class Dump(BaseApiHandler):
                 request.setResponseCode(http.BAD_REQUEST)
                 returnValue({'error': 'expected "?url=<short_url>"'})
             else:
-                row = yield tables.get_row_by_short_url(short_url[0])
+                row = yield tables.get_row_by_short_url(short_url[0], False)
 
                 if row:
-                    returnValue(self.format_row(row))
+                    audit = yield tables.get_audit_row(row['id'])
+                    returnValue(self._format(row, audit))
                 else:
                     request.setResponseCode(http.NOT_FOUND)
                     returnValue({'error': 'short url not found'})
