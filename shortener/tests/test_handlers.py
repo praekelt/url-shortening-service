@@ -104,4 +104,4 @@ class TestHandlers(TestCase):
             allow_redirects=False,
             pool=self.pool)
 
-        self.assertEqual(resp.code, 404)
+        self.assertEqual(resp.code, 400)

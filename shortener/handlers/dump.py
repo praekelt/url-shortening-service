@@ -21,7 +21,8 @@ class Dump(BaseApiHandler):
         try:
             tables = ShortenerTables(self.config['account'], conn)
             if not short_url:
-                request.setResponseCode(http.NOT_FOUND)
+                request.setResponseCode(http.BAD_REQUEST)
+                returnValue({'error': 'expected "?url=<short_url>"'})
             else:
                 row = yield tables.get_row_by_short_url(short_url[0])
 
@@ -29,6 +30,6 @@ class Dump(BaseApiHandler):
                     returnValue(self.format_row(row))
                 else:
                     request.setResponseCode(http.NOT_FOUND)
+                    returnValue({'error': 'short url not found'})
         finally:
             yield conn.close()
-        returnValue({})
