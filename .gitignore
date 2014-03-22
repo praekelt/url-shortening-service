@@ -1,4 +1,5 @@
 *.py[cod]
+*.pid
 
 # C extensions
 *.so
@@ -6,6 +7,7 @@
 # Packages
 *.egg
 *.egg-info
+dropin.cache
 dist
 build
 eggs
@@ -18,6 +20,12 @@ develop-eggs
 lib
 lib64
 __pycache__
+ve/
+_trial_temp/
+htmlcov/
+logs/
+config/
+tmp/
 
 # Installer logs
 pip-log.txt

@@ -1,0 +1,16 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+services:
+  - redis-server
+install:
+  - "pip install coveralls coverage --use-wheel"
+  - "pip install -e . --use-wheel"
+before_script:
+  - psql -c 'create database shortener_test;' -U postgres
+script:
+  - trial shortener
+  - SHORTENER_TEST_CONNECTION_STRING='postgresql://postgres@localhost:5432/shortener_test' coverage run --source=shortener `which trial` shortener
+after_success:
+  - coveralls
