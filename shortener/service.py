@@ -26,6 +26,10 @@ def makeService(options):
     with open(config_file, 'r') as fp:
         config = dict(yaml.safe_load(fp))
 
+    # NOTE: This sets the global reactor threadpool size to 1.
+    #       alchimia doesn't deal well with multiple threads yet.
+    reactor.suggestThreadPoolSize(1)
+
     app = ShortenerServiceApp(reactor=reactor, config=config)
 
     site = server.Site(app.app.resource())
